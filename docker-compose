@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      BOT_API: "8179380806:AAGlfWGGYLk2pQqEYMSuVsgpVHaUm3p-D6I"
+    volumes:
+      - .:/app
