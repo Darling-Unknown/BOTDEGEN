@@ -1,19 +1,22 @@
 // Import the neccessary libraries
 const express = require('express');
-
+const bodyParser= require('body-parser')
 
 // Initialize express app
 const app = express();
-
+app.use(bodyParser.json())
 // Import necessary librariesn
-const { Telegraf } = require('telegraf');
+
 
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
 
 // Replace with your bot token
 const botToken = '7673269679:AAFJtzKg4LjWewAvYPe6NjxFQENwEfC7nnk';
-const bot = new TelegramBot(botToken, { polling: true });
+const bot = new TelegramBot(botToken);
+const webhookurl = `https://simple-u449.onrender.com/bot${botToken}`;
+bot.setWebHook(webhookurl);
+
 
 let trackedAddresses = [];
 let tokenMessageId = null;
@@ -110,162 +113,14 @@ bot.onText(/\/addtoken (.+)/, async (msg, match) => {
   updateInterval = setInterval(updateMessage, 20000);
   updateMessage(); // Call immediately
 });
-
-// Handle errors
-bot.// Function to send errors to the admin
-function sendErrorToAdmin(errorMessage) {
-  bot.telegram.sendMessage(ADMIN_ID, `Error: ${errorMessage}`).catch((err) => {
-    console.error('Failed to send error notification to admin:', err);
-  });
-}
-
-// Handle uncaught exceptions globally
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught exception:', err);
-  sendErrorToAdmin(`Uncaught Exception: ${err.message}\nStack Trace: ${err.stack}`);
+// Webhook endpoint
+app.post(`/bot${botToken}`, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
 });
 
-// Handle unhandled promise rejections globally
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled promise rejection:', reason);
-  sendErrorToAdmin(`Unhandled Promise Rejection: ${reason}`);
+// Start the server
+const port = process.env.port || 3000;
+app.listen(port, () => {
+  console.log(`Bot is running on port ${port}`);
 });
-
-// Set webhook for the bot
-const webhookUrl = `https://maxbot20017-61x0b9w4.b4a.run/bot`; // Replace with your Back4App URL
-bot.telegram.setWebhook(webhookUrl).then(() => {
-  console.log('Webhook set successfully:', webhookUrl);
-}).catch((err) => {
-  console.error('Failed to set webhook:', err);
-  sendErrorToAdmin(`Failed to set webhook: ${err.message}`);
-});
-
-// Handle incoming webhook requests
-// Match the webhook path '/bot'
-// Handle incoming webhook requests and make sure the bot is processing updates
-app.use(bot.webhookCallback('/bot')); // Make sure the path '/bot'
-// Start the Express server
-const PORT = 3000; // Back4App typically uses port 3000 for containers
-app.listen(PORT, () => {
-  console.log(`Bot is running on port ${PORT}`);
-});
-
-// Start the bot with webhook handling
-function startBot() {
-  try {
-    console.log('Starting bot with webhook...');
-    bot.telegram.getWebhookInfo().then((info) => {
-      if (info.url !== webhookUrl) {
-        console.log('Updating webhook URL...');
-        bot.telegram.setWebhook(webhookUrl).catch((err) => {
-          console.error('Failed to update webhook:', err);
-          sendErrorToAdmin(`Failed to update webhook: ${err.message}`);
-        });
-      }
-      console.log('Webhook is active. Bot is ready!');
-    }).catch((err) => {
-      console.error('Failed to fetch webhook info:', err);
-      sendErrorToAdmin(`Failed to fetch webhook info: ${err.message}`);
-    });
-  } catch (err) {
-    console.error('Failed to start bot:', err);
-    sendErrorToAdmin(`Failed to start bot: ${err.message}`);
-  }
-}
-
-// Function to restart the bot if it crashes
-function restartBot() {
-  console.log('Bot is restarting...');
-  try {
-    bot.stop(); // Stop the bot gracefully
-
-    // Wait for a short delay and restart
-    setTimeout(() => {
-      startBot(); // Restart the bot by calling the startBot function again
-    }, 5000); // 5 seconds delay before restarting
-  } catch (err) {
-    console.error('Error during bot restart:', err);
-    sendErrorToAdmin(`Error dur
-ing bot restart: ${err.message}`);
-  }
-}
-// Function to send errors to the admin
-function sendErrorToAdmin(errorMessage) {
-  bot.telegram.sendMessage(ADMIN_ID, `Error: ${errorMessage}`).catch((err) => {
-    console.error('Failed to send error notification to admin:', err);
-  });
-}
-
-// Handle uncaught exceptions globally
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught exception:', err);
-  sendErrorToAdmin(`Uncaught Exception: ${err.message}\nStack Trace: ${err.stack}`);
-});
-
-// Handle unhandled promise rejections globally
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled promise rejection:', reason);
-  sendErrorToAdmin(`Unhandled Promise Rejection: ${reason}`);
-});
-
-// Set webhook for the bot
-const webhookUrl = `https://maxbot20017-61x0b9w4.b4a.run/bot`; // Replace with your Back4App URL
-bot.telegram.setWebhook(webhookUrl).then(() => {
-  console.log('Webhook set successfully:', webhookUrl);
-}).catch((err) => {
-  console.error('Failed to set webhook:', err);
-  sendErrorToAdmin(`Failed to set webhook: ${err.message}`);
-});
-
-// Handle incoming webhook requests
-// Match the webhook path '/bot'
-// Handle incoming webhook requests and make sure the bot is processing updates
-app.use(bot.webhookCallback('/bot')); // Make sure the path '/bot'
-// Start the Express server
-const PORT = 3000; // Back4App typically uses port 3000 for containers
-app.listen(PORT, () => {
-  console.log(`Bot is running on port ${PORT}`);
-});
-
-// Start the bot with webhook handling
-function startBot() {
-  try {
-    console.log('Starting bot with webhook...');
-    bot.telegram.getWebhookInfo().then((info) => {
-      if (info.url !== webhookUrl) {
-        console.log('Updating webhook URL...');
-        bot.telegram.setWebhook(webhookUrl).catch((err) => {
-          console.error('Failed to update webhook:', err);
-          sendErrorToAdmin(`Failed to update webhook: ${err.message}`);
-        });
-      }
-      console.log('Webhook is active. Bot is ready!');
-    }).catch((err) => {
-      console.error('Failed to fetch webhook info:', err);
-      sendErrorToAdmin(`Failed to fetch webhook info: ${err.message}`);
-    });
-  } catch (err) {
-    console.error('Failed to start bot:', err);
-    sendErrorToAdmin(`Failed to start bot: ${err.message}`);
-  }
-}
-
-// Function to restart the bot if it crashes
-function restartBot() {
-  console.log('Bot is restarting...');
-  try {
-    bot.stop(); // Stop the bot gracefully
-
-    // Wait for a short delay and restart
-    setTimeout(() => {
-      startBot(); // Restart the bot by calling the startBot function again
-    }, 5000); // 5 seconds delay before restarting
-  } catch (err) {
-    console.error('Error during bot restart:', err);
-    sendErrorToAdmin(`Error dur
-ing bot restart: ${err.message}`);
-  }
-}
-
-// Start the bot initially
-startBot();
