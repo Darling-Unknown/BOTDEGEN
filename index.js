@@ -1,8 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
-
+ // Make sure to set your environment variable
 // Replace with your bot token
-const botToken = '7673269679:AAFJtzKg4LjWewAvYPe6NjxFQENwEfC7nnk';
+const botToken = (process.env['BOT_API']);
 const bot = new TelegramBot(botToken, { polling: true });
 
 let trackedAddresses = [];
