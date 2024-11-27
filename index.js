@@ -1,12 +1,10 @@
-// Import the neccessary libraries
+// Import the necessary libraries
 const express = require('express');
-const bodyParser= require('body-parser')
+const bodyParser = require('body-parser');
 
 // Initialize express app
 const app = express();
-app.use(bodyParser.json())
-// Import necessary librariesn
-
+app.use(bodyParser.json());
 
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require('axios');
@@ -17,7 +15,6 @@ const bot = new TelegramBot(botToken);
 const webhookurl = `https://simple-u449.onrender.com/bot${botToken}`;
 bot.setWebHook(webhookurl);
 
-
 let trackedAddresses = [];
 let tokenMessageId = null;
 let updateInterval;
@@ -25,13 +22,22 @@ let updateInterval;
 // Function to fetch token details from Dexscreener
 async function getTokenDetails(tokenAddress) {
   try {
-    const response = await axios.get(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+    const response = await axios.get(
+      `https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`,
+      {
+        headers: {
+          'User-Agent': 'DarlingtonBot/1.0', // A custom User-Agent to identify your bot
+          'Accept': 'application/json', // Ensure the API knows you want JSON data
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error('Error fetching token details:', error.response?.data || error.message);
     throw new Error('Failed to fetch token details from Dexscreener.');
   }
 }
+
 // Function to format token details into a large ASCII card
 function createAsciiCard(tokenData) {
   const primaryPair = tokenData.pairs[0]; // Assuming the first pair is the most relevant
@@ -41,7 +47,7 @@ function createAsciiCard(tokenData) {
   card += '|             Darlington🤖               |\n';
   card += '|------------------------------------------|\n';
   card += `|  Token Name: ${primaryPair.baseToken.name || 'TOKEN NAME'}               |\n`;
-  card += `|  ROI (24h): ${primaryPair.priceChange.h24 +'%'|| '+0.00%'}                 |\n`;
+  card += `|  ROI (24h): ${primaryPair.priceChange.h24 + '%' || '+0.00%'}                 |\n`;
   card += `|  Price: $${primaryPair.priceUsd || 'N/A'}                               |\n`;
   card += `|  Market Cap: $${primaryPair.fdv || 'N/A'}                              |\n`;
   card += '|------------------------------------------|\n';
@@ -60,7 +66,7 @@ function createAsciiCard(tokenData) {
 
   return card;
 }
-  
+
 // Command to fetch token details and display them
 bot.onText(/\/addtoken (.+)/, async (msg, match) => {
   const chatId = msg.chat.id;
@@ -113,6 +119,7 @@ bot.onText(/\/addtoken (.+)/, async (msg, match) => {
   updateInterval = setInterval(updateMessage, 20000);
   updateMessage(); // Call immediately
 });
+
 // Webhook endpoint
 app.post(`/bot${botToken}`, (req, res) => {
   bot.processUpdate(req.body);
