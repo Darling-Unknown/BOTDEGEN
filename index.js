@@ -1,13 +1,18 @@
 // Import the necessary libraries
 const express = require('express');
 const bodyParser = require('body-parser');
+const TelegramBot = require('node-telegram-bot-api');
+const axios = require('axios');
+const { CookieJar } = require('tough-cookie');
+const { wrapper } = require('axios-cookiejar-support');
 
 // Initialize express app
 const app = express();
 app.use(bodyParser.json());
 
-const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
+// Initialize a cookie jar
+const cookieJar = new CookieJar();
+const client = wrapper(axios.create({ jar: cookieJar }));
 
 // Replace with your bot token
 const botToken = '7673269679:AAFJtzKg4LjWewAvYPe6NjxFQENwEfC7nnk';
@@ -22,7 +27,7 @@ let updateInterval;
 // Function to fetch token details from Dexscreener
 async function getTokenDetails(tokenAddress) {
   try {
-    const response = await axios.get(
+    const response = await client.get(
       `https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`,
       {
         headers: {
@@ -115,7 +120,7 @@ bot.onText(/\/addtoken (.+)/, async (msg, match) => {
     }
   };
 
-  // Update the message every 5 seconds
+  // Update the message every 20 seconds
   updateInterval = setInterval(updateMessage, 20000);
   updateMessage(); // Call immediately
 });
